@@ -12,6 +12,8 @@ import Topbar from "./src/components/layout/Topbar";
 import Login from "./src/components/auth/Login";
 import Placeholder from "./src/components/common/Placeholder";
 
+import { logoutUser, getStoredUser } from "./src/api/auth";
+
 // Student Views
 import StudentDashboard from "./src/components/student/StudentDashboard";
 import Learning from "./src/components/student/Learning";
@@ -19,10 +21,12 @@ import LabExplorer from "./src/components/student/LabExplorer";
 import LabDetail from "./src/components/student/LabDetail";
 import Materials from "./src/components/student/Materials";
 
-// Admin Views
 import AdminDashboard from "./src/components/admin/AdminDashboard";
 import AdminStudents from "./src/components/admin/AdminStudents";
 import AdminClasses from "./src/components/admin/AdminClasses";
+import AdminSubjects from "./src/components/admin/AdminSubjects";
+import AdminLabs from "./src/components/admin/AdminLabs";
+
 
 // Export modular subcomponents for external consumption
 export { default as Sidebar } from "./src/components/layout/Sidebar";
@@ -44,14 +48,33 @@ export { default as Materials } from "./src/components/student/Materials";
 export { default as AdminDashboard } from "./src/components/admin/AdminDashboard";
 export { default as AdminStudents } from "./src/components/admin/AdminStudents";
 export { default as AdminClasses } from "./src/components/admin/AdminClasses";
+export { default as AdminSubjects } from "./src/components/admin/AdminSubjects";
+export { default as AdminLabs } from "./src/components/admin/AdminLabs";
 export * from "./src/constants/theme";
 export * from "./src/data/mockData";
 
 export default function BlitzCyberLab() {
-  const [stage, setStage] = useState("login"); // login | student | admin
+  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
+  const [stage, setStage] = useState(() => {
+    const user = getStoredUser();
+    if (user?.user_type === "admin") return "admin";
+    if (user?.user_type === "student") return "student";
+    return "login";
+  });
   const [studentPage, setStudentPage] = useState("dashboard");
   const [adminPage, setAdminPage] = useState("a-dashboard");
   const [activeLab, setActiveLab] = useState(null);
+
+  const handleLogin = (role, user) => {
+    if (user) setCurrentUser(user);
+    setStage(role);
+  };
+
+  const handleLogout = async () => {
+    await logoutUser();
+    setCurrentUser(null);
+    setStage("login");
+  };
 
   const goLab = (page, lab) => {
     if (lab) setActiveLab(lab);
@@ -61,17 +84,19 @@ export default function BlitzCyberLab() {
   if (stage === "login") {
     return (
       <div style={{ fontFamily: sans }}>
-        <Login onLogin={(role) => setStage(role)} />
+        <Login onLogin={handleLogin} />
       </div>
     );
   }
 
   if (stage === "admin") {
     const pages = {
-      "a-dashboard": <AdminDashboard />,
+      "a-dashboard": <AdminDashboard onNavigate={setAdminPage} />,
       "a-students": <AdminStudents />,
       "a-classes": <AdminClasses />,
-      "a-labs": <Placeholder title="Labs" blurb="Manage all 50 lab environments, difficulty, points, and availability." icon={FlaskConical} />,
+      "a-subjects": <AdminSubjects />,
+      "a-labs": <AdminLabs onOpenAddModal={() => setAdminPage("a-dashboard")} />,
+
       "a-materials": <Placeholder title="Study Materials" blurb="Upload and organize documents linked to classes and labs." icon={BookOpen} />,
       "a-assignments": <Placeholder title="Assignments" blurb="Assign labs and materials to classes or individual students." icon={ClipboardList} />,
       "a-fees": <Placeholder title="Fees" blurb="Track payment status across every enrolled student." icon={Wallet} />,
@@ -82,9 +107,13 @@ export default function BlitzCyberLab() {
     };
     return (
       <div style={{ fontFamily: sans, display: "flex", height: "100vh", background: C.void, color: C.hi, overflow: "hidden" }}>
-        <Sidebar items={NAV_ADMIN} active={adminPage} onSelect={setAdminPage} onSwitch={() => setStage("login")} switchLabel="Sign out" />
+        <Sidebar items={NAV_ADMIN} active={adminPage} onSelect={setAdminPage} onSwitch={handleLogout} switchLabel="Sign out" />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100%" }}>
-          <Topbar placeholder="Search students, classes, labs..." name="Admin" role="Platform Administrator" />
+          <Topbar
+            placeholder="Search students, classes, labs..."
+            name={currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : (currentUser?.username || "Admin")}
+            role="Platform Administrator"
+          />
           <div style={{ flex: 1, overflow: "hidden" }}>{pages[adminPage]}</div>
         </div>
       </div>
@@ -112,12 +141,16 @@ export default function BlitzCyberLab() {
         items={NAV_STUDENT}
         active={studentPage === "lab-detail" ? "labs" : studentPage}
         onSelect={setStudentPage}
-        onSwitch={() => setStage("login")}
+        onSwitch={handleLogout}
         switchLabel="Sign out"
       />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100%" }}>
         {studentPage !== "lab-detail" && (
-          <Topbar placeholder="Search labs, topics, vulnerabilities..." name="Rohith" role="Student" />
+          <Topbar
+            placeholder="Search labs, topics, vulnerabilities..."
+            name={currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : (currentUser?.username || "Student")}
+            role="Student"
+          />
         )}
         <div style={{ flex: 1, overflow: "hidden" }}>{pages[studentPage]}</div>
       </div>

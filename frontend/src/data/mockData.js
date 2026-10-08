@@ -1,7 +1,7 @@
 import {
   LayoutGrid, GraduationCap, FlaskConical, BookOpen, Trophy, TrendingUp, Award,
   FileBadge, User, Users, Layers, ClipboardList, Wallet, Activity, BarChart3,
-  ScrollText, Settings, Target
+  ScrollText, Settings, Target, BookMarked
 } from "lucide-react";
 
 export const LABS = [
@@ -43,24 +43,20 @@ export const NAV_STUDENT = [
   { label: "Learning", icon: GraduationCap, key: "learning" },
   { label: "Labs", icon: FlaskConical, key: "labs" },
   { label: "Study Materials", icon: BookOpen, key: "materials" },
-  { label: "Challenges", icon: Target, key: "challenges" },
   { label: "Progress", icon: TrendingUp, key: "progress" },
   { label: "Leaderboard", icon: Trophy, key: "leaderboard" },
   { label: "Achievements", icon: Award, key: "achievements" },
   { label: "Certificates", icon: FileBadge, key: "certificates" },
-  { label: "Profile", icon: User, key: "profile" },
+
 ];
 
 export const NAV_ADMIN = [
   { label: "Dashboard", icon: LayoutGrid, key: "a-dashboard" },
   { label: "Students", icon: Users, key: "a-students" },
-  { label: "Classes", icon: Layers, key: "a-classes" },
+  { label: "Courses", icon: BookMarked, key: "a-subjects" },
   { label: "Labs", icon: FlaskConical, key: "a-labs" },
   { label: "Study Materials", icon: BookOpen, key: "a-materials" },
-  { label: "Assignments", icon: ClipboardList, key: "a-assignments" },
-  { label: "Fees", icon: Wallet, key: "a-fees" },
   { label: "Activity", icon: Activity, key: "a-activity" },
-  { label: "Analytics", icon: BarChart3, key: "a-analytics" },
   { label: "Audit Logs", icon: ScrollText, key: "a-audit" },
   { label: "Settings", icon: Settings, key: "a-settings" },
 ];
